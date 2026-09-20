@@ -1,0 +1,24 @@
+# Node
+node_modules/
+.next/
+out/
+dist/
+*.log
+
+# Prisma
+prisma/*.db
+prisma/*.db-journal
+
+# Env
+.env
+.env.local
+.env*.local
+
+# OS / Editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Git
+.git/

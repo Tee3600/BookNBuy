@@ -1,0 +1,225 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  BUYER
+  VENDOR
+  ADMIN
+}
+
+enum KycStatus {
+  NONE
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum OrderStatus {
+  PENDING
+  PAID
+  FULFILLING
+  IN_TRANSIT
+  DELIVERED
+  COMPLETED
+  DISPUTED
+  REFUNDED
+  CANCELLED
+}
+
+enum BookingStatus {
+  PENDING_PAYMENT
+  CONFIRMED
+  COMPLETED
+  CANCELLED
+  NO_SHOW
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  FAILED
+  REFUNDED
+}
+
+enum EscrowStatus {
+  HELD
+  RELEASED
+  REFUNDED
+  PARTIAL
+}
+
+enum FulfillmentMethod {
+  COURIER
+  BIKE
+  WAYBILL
+  SELF
+}
+
+model User {
+  id           String    @id @default(cuid())
+  name         String
+  email        String    @unique
+  phone        String?
+  passwordHash String
+  roles        String    @default("BUYER") // comma-separated: BUYER,VENDOR,ADMIN
+  kycStatus    KycStatus @default(NONE)
+  createdAt    DateTime  @default(now())
+  vendor      VendorProfile?
+  bookings    Booking[] @relation("BuyerBookings")
+  orders      Order[]   @relation("BuyerOrders")
+  reviews     Review[]
+}
+
+model VendorProfile {
+  userId        String @id
+  user          User   @relation(fields: [userId], references: [id])
+  businessName  String
+  city          String
+  bankCode      String?
+  accountNumber String?
+  approved      Boolean @default(false)
+  products      Product[]
+  services      Service[]
+  payouts       Payout[]
+  escrows       EscrowLedger[]
+}
+
+model Product {
+  id          String   @id @default(cuid())
+  vendorId    String
+  vendor      VendorProfile @relation(fields: [vendorId], references: [userId])
+  title       String
+  description String
+  priceNGN    Int
+  stock       Int      @default(0)
+  images      String   @default("[]")
+  status      String   @default("ACTIVE")
+  createdAt   DateTime @default(now())
+}
+
+model Service {
+  id          String   @id @default(cuid())
+  vendorId    String
+  vendor      VendorProfile @relation(fields: [vendorId], references: [userId])
+  title       String
+  priceNGN    Int
+  durationMin Int      @default(60)
+  bufferMin   Int      @default(0)
+  workingHours String  @default("{}")
+  status      String   @default("ACTIVE")
+  bookings    Booking[]
+}
+
+model Booking {
+  id        String        @id @default(cuid())
+  serviceId String
+  service   Service       @relation(fields: [serviceId], references: [id])
+  buyerId   String
+  buyer     User          @relation("BuyerBookings", fields: [buyerId], references: [id])
+  vendorId  String
+  startAt   DateTime
+  endAt     DateTime
+  status    BookingStatus @default(PENDING_PAYMENT)
+  notes     String?
+
+  @@unique([vendorId, startAt])
+}
+
+model Order {
+  id        String      @id @default(cuid())
+  buyerId   String
+  buyer     User        @relation("BuyerOrders", fields: [buyerId], references: [id])
+  totalNGN  Int
+  feeNGN    Int         @default(0)
+  status    OrderStatus @default(PENDING)
+  createdAt DateTime    @default(now())
+  items     OrderItem[]
+  payments  Payment[]
+  fulfillment Fulfillment?
+  dispute   Dispute?
+}
+
+model OrderItem {
+  id        String  @id @default(cuid())
+  orderId   String
+  order     Order   @relation(fields: [orderId], references: [id])
+  type      String  // PRODUCT | BOOKING
+  productId String?
+  bookingId String?
+  qty       Int     @default(1)
+  priceNGN  Int
+}
+
+model Payment {
+  id           String        @id @default(cuid())
+  orderId      String
+  order        Order         @relation(fields: [orderId], references: [id])
+  provider     String        @default("paystack")
+  reference    String        @unique
+  amountNGN    Int
+  currencyPaid String        @default("NGN")
+  fxRate       Float?
+  status       PaymentStatus @default(PENDING)
+  createdAt    DateTime      @default(now())
+  escrow       EscrowLedger?
+}
+
+model EscrowLedger {
+  id             String       @id @default(cuid())
+  paymentId      String       @unique
+  payment        Payment      @relation(fields: [paymentId], references: [id])
+  vendorId       String
+  vendor         VendorProfile @relation(fields: [vendorId], references: [userId])
+  amountHeld     Int
+  amountReleased Int          @default(0)
+  status         EscrowStatus @default(HELD)
+  releaseAfter   DateTime
+  createdAt      DateTime     @default(now())
+}
+
+model Fulfillment {
+  orderId      String @id
+  order        Order  @relation(fields: [orderId], references: [id])
+  method       FulfillmentMethod
+  trackingRef  String?
+  status       String @default("PENDING")
+  updatedAt    DateTime @updatedAt
+}
+
+model Dispute {
+  orderId    String @id
+  order      Order  @relation(fields: [orderId], references: [id])
+  reason     String
+  photos     String @default("[]")
+  status     String @default("OPEN")
+  resolution String?
+  createdAt  DateTime @default(now())
+}
+
+model Review {
+  id        String   @id @default(cuid())
+  vendorId  String
+  buyerId   String
+  buyer     User     @relation(fields: [buyerId], references: [id])
+  orderId   String?
+  bookingId String?
+  rating    Int
+  comment   String?
+  createdAt DateTime @default(now())
+}
+
+model Payout {
+  id        String   @id @default(cuid())
+  vendorId  String
+  vendor    VendorProfile @relation(fields: [vendorId], references: [userId])
+  amountNGN Int
+  bankRef   String?
+  status    String   @default("PENDING")
+  createdAt DateTime @default(now())
+}
