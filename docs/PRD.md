@@ -161,4 +161,12 @@ Native mobile apps, live GPS tracking, automated Paystack Transfers, multi-curre
 
 **Question steered with AI builder:** Should local development use SQLite (current `prisma/schema.prisma`, `DATABASE_URL="file:./dev.db"`) or switch now to Postgres running locally in Docker?
 
-**Decision:** Keep SQLite for Phases 0–3, switch to local Postgres via Docker from Phase 4 (escrow/disputes/payouts). See canonical `docs/PRD.md` §11 and `docs/IMPLEMENTATION_PLAN.md`.
+**Options considered:**
+- A) SQLite locally (zero setup, fastest for Phases 0–3; risk: subtle drift from prod Postgres on constraints/transactions).
+- B) Postgres in Docker locally from now (full parity for escrow/money-move transactions; cost: Docker Desktop setup on Windows + slower onboarding).
+
+**Decision:** Keep (A) SQLite for Phases 0–3, switch to (B) local Postgres via Docker starting at Phase 4 (escrow/disputes/payouts), Postgres managed in prod.
+
+**Why:** Speed now when schema churn is highest (auth, catalog, booking guard), parity exactly when correctness matters most (HELD→RELEASED ledger, idempotent webhooks, `@@unique([vendorId, startAt])` under concurrency). Migration path is Prisma-only (`provider` sqlite→postgresql + `prisma migrate`), no app-code rewrite. Plan reference: `docs/IMPLEMENTATION_PLAN.md` Phase 4 entry.
+
+**Tool review (explicit):** Framework = Next.js 14 App Router; Database = Prisma + SQLite local now → Postgres local (Docker) from Phase 4; Auth = NextAuth self-hosted; File storage = Cloudinary (MVP) → S3-compatible post-MVP. **App & DB run locally for now** (`npm run dev`, local DB file/container, Paystack test keys).
