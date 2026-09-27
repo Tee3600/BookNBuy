@@ -170,3 +170,18 @@ Native mobile apps, live GPS tracking, automated Paystack Transfers, multi-curre
 **Why:** Speed now when schema churn is highest (auth, catalog, booking guard), parity exactly when correctness matters most (HELD→RELEASED ledger, idempotent webhooks, `@@unique([vendorId, startAt])` under concurrency). Migration path is Prisma-only (`provider` sqlite→postgresql + `prisma migrate`), no app-code rewrite. Plan reference: `docs/IMPLEMENTATION_PLAN.md` Phase 4 entry.
 
 **Tool review (explicit):** Framework = Next.js 14 App Router; Database = Prisma + SQLite local now → Postgres local (Docker) from Phase 4; Auth = NextAuth self-hosted; File storage = Cloudinary (MVP) → S3-compatible post-MVP. **App & DB run locally for now** (`npm run dev`, local DB file/container, Paystack test keys).
+
+---
+
+## 12. Design Refinement Note (verifiable — 2026-09-27, design.html)
+
+**File:** `design.html` (repo root; preview via `https://htmlpreview.github.io/?https://github.com/Tee3600/BookNBuy/blob/main/design.html`). Shows: color swatches (primary `#0E7C3E`, ink, accent `#F5A623`, bg, muted), typography sample, styled buttons, sample search input + slot chips.
+
+**Refinement steered with AI builder:** Button styling.
+
+**Changes I told the agent to make (check against design.html):**
+1. Border radius 12px on `.btn` (rounder corners) — see `design.html` `.btn { ... border-radius: 12px; /* refined */ }`.
+2. Hover darken on primary (`.btn-primary:hover` → `#0A5E30`).
+3. Visible keyboard focus ring (amber `outline: 3px solid #F5A623` on `.btn-primary:focus-visible, .btn-secondary:focus-visible`).
+4. Active press state (`.btn-primary:active` → darker bg + `translateY(1px)`).
+5. Full-width stacked buttons under 480px (`@media (max-width: 480px) { .btn { width: 100% } }`).
