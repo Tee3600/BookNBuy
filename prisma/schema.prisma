@@ -3,7 +3,7 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
@@ -62,18 +62,62 @@ enum FulfillmentMethod {
 }
 
 model User {
-  id           String    @id @default(cuid())
-  name         String
-  email        String    @unique
-  phone        String?
-  passwordHash String
-  roles        String    @default("BUYER") // comma-separated: BUYER,VENDOR,ADMIN
-  kycStatus    KycStatus @default(NONE)
-  createdAt    DateTime  @default(now())
+  id            String    @id @default(cuid())
+  name          String
+  email         String    @unique
+  emailVerified Boolean   @default(false)
+  image         String?
+  phone         String?
+  passwordHash  String    @default("") // legacy; Better Auth stores credentials in Account
+  roles         String    @default("BUYER") // comma-separated: BUYER,VENDOR,ADMIN
+  kycStatus     KycStatus @default(NONE)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
   vendor      VendorProfile?
   bookings    Booking[] @relation("BuyerBookings")
   orders      Order[]   @relation("BuyerOrders")
   reviews     Review[]
+  sessions    Session[]
+  accounts    Account[]
+}
+
+// Better Auth tables (Prisma adapter). Generate/verify with `npx @better-auth/cli generate`.
+model Session {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  token     String   @unique
+  expiresAt DateTime
+  ipAddress String?
+  userAgent String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Account {
+  id                    String    @id @default(cuid())
+  userId                String
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accountId             String
+  providerId            String
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Verification {
+  id         String   @id @default(cuid())
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 }
 
 model VendorProfile {

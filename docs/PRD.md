@@ -185,3 +185,11 @@ Native mobile apps, live GPS tracking, automated Paystack Transfers, multi-curre
 3. Visible keyboard focus ring (amber `outline: 3px solid #F5A623` on `.btn-primary:focus-visible, .btn-secondary:focus-visible`).
 4. Active press state (`.btn-primary:active` → darker bg + `translateY(1px)`).
 5. Full-width stacked buttons under 480px (`@media (max-width: 480px) { .btn { width: 100% } }`).
+
+---
+
+## 13. Stack Revision (owner-directed — 2026-09-27, supersedes §11 tool choices)
+
+Owner directives: (1) no Supabase (subscription) → Postgres on local device — via `docker-compose.yml` (postgres:16-alpine), connection in `.env.example` as `DATABASE_URL="postgresql://booknbuy:booknbuy@localhost:5432/booknbuy"`; (2) auth = Better Auth (`better-auth` + Prisma adapter, `src/lib/auth.ts`, `/api/auth/[...all]`, `Session`/`Account`/`Verification` tables in `prisma/schema.prisma`); (3) storage = Cloudflare R2 (S3-compatible presigned uploads, `src/lib/storage.ts`, `R2_*` keys); (4) no Supabase, no Vercel — everything hosted on local device (`npm run dev` + `docker compose up -d db`). **App & DB run locally for now.**
+
+Note: §11's SQLite-first staging is retired; schema provider is now `postgresql` from Phase 0.

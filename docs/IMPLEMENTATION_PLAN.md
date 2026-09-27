@@ -1,22 +1,22 @@
 # Implementation Plan — BookNBuy (derived from PRD)
 
 Source PRD: `docs/gemini-code-1789943796558.md` (+ canonical copy `docs/PRD.md`)
-Stack snapshot: Next.js 14 App Router + TypeScript, Prisma, NextAuth, Paystack, Cloudinary.
-**App & DB run locally for now** — no cloud deploy required for Phases 0–5.
+Stack snapshot: Next.js 14 App Router + TypeScript, Prisma + local Postgres, Better Auth, Paystack, Cloudflare R2.
+**App & DB run locally for now** — `npm run dev` + `docker compose up -d db`. No Supabase, no Vercel, no hosted DB.
 
 ## Phase 0 — Local foundation (0.5 day)
 Goal: anyone can clone and run.
 Outputs:
 - `npm install` passes on Node 20+
-- `npx prisma migrate dev --name init` creates SQLite `dev.db`
-- `npm run dev` serves `/` + `GET /api/health` → `{ok:true}`
-- `.env.example` documented; `.env` never committed
+- `docker compose up -d db` starts local Postgres 16; `npx prisma migrate dev --name init` migrates
+- `npm run dev` serves `/` + `GET /api/health` → `{ok:true, db:…}`
+- `.env.example` documented (DATABASE_URL, BETTER_AUTH_SECRET, R2 keys, Paystack test keys); `.env` never committed
 Done when: health endpoint returns 200 locally, Prisma Studio opens.
 
 ## Phase 1 — Auth, roles, vendor KYC (2–3 days)
 PRD §3.1, §4.1–4.2, §4.13
 Outputs:
-- `src/app/(auth)/login|signup` + NextAuth session
+- `src/app/login|signup` + Better Auth email+password session (`src/lib/auth.ts`, `/api/auth/[...all]`)
 - `User.roles` = BUYER/VENDOR/ADMIN; `KycStatus` flow NONE→PENDING→APPROVED/REJECTED
 - `src/app/vendor/onboard` form (businessName, city, bankCode, accountNumber)
 - `src/app/admin/vendors` approve/reject queue + audit log entry
@@ -25,7 +25,7 @@ Done when: one account can sign up → apply as vendor → get approved → see 
 ## Phase 2 — Catalog + slot booking (3–4 days)
 PRD §3.2–3.3, §4.3–4.4, §6 Product/Service/Booking
 Outputs:
-- `Product` CRUD + image upload abstraction (`src/lib/storage.ts` → Cloudinary now, S3 later)
+- `Product` CRUD + image upload abstraction (`src/lib/storage.ts` → Cloudinary R2 presigned URLs; URL field until Phase 3)
 - `Service` CRUD (duration, buffer, workingHours JSON, blackout dates)
 - Slot generation (`src/lib/booking.ts`) + booking create in DB transaction
 - Anti-double-book: `@@unique([vendorId, startAt])`; catch P2002 → "slot taken"
@@ -68,8 +68,8 @@ Outputs:
 Done when: fresh clone → seed → login as 3 personas → full buy + book flow locally without errors.
 
 ## Tool review (for §2 of task)
-- Framework: Next.js 14 App Router (web + API routes in one deployable; mobile apps post-MVP reuse the API)
-- Database: Prisma ORM; SQLite locally in Phases 0–3, Postgres (Docker) locally from Phase 4; Postgres managed in prod
-- Authentication: NextAuth (self-hosted sessions, email+password now, SMS/WhatsApp OTP next)
-- File storage: Cloudinary for MVP product/dispute photos (fast unsigned uploads); S3-compatible path post-MVP
-- Local-first: `npm run dev` + SQLite file / local Postgres container; Paystack test keys; no cloud dependency to demo.
+- Framework: Next.js 14 App Router (web + API routes in one deployable, run locally via `npm run dev`; mobile apps post-MVP reuse the API)
+- Database: Prisma ORM + Postgres running on local device via Docker Compose (`docker-compose.yml`, postgres:16-alpine); no Supabase (subscription) — local Postgres for dev, managed Postgres only if/when needed in prod
+- Authentication: Better Auth (self-hosted sessions, email+password now, SMS/WhatsApp OTP next)
+- File storage: Cloudflare R2 (S3-compatible presigned uploads via `src/lib/storage.ts`); no Supabase Storage
+- Local-first: `npm run dev` + local Postgres container; Paystack test keys; no Vercel, no cloud dependency to demo.
