@@ -16,6 +16,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <style>{`
           label { display: block; font-weight: 600; margin: 12px 0 6px; }
           input { width: 100%; padding: 12px 14px; font-size: 1rem; border: 2px solid #E2E8E2; border-radius: 12px; }
+          select { padding: 12px 14px; font-size: 1rem; border: 2px solid #E2E8E2; border-radius: 12px; background: #fff; }
           input:focus { outline: none; border-color: #0E7C3E; box-shadow: 0 0 0 3px rgba(14,124,62,.2); }
           .btn { display: inline-block; border: 0; cursor: pointer; font-size: 1rem; font-weight: 700; padding: 12px 22px; border-radius: 12px; }
           .btn-primary { background: #0E7C3E; color: #fff; }

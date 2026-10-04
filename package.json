@@ -10,6 +10,7 @@
     "db:migrate": "prisma migrate dev",
     "db:seed": "tsx prisma/seed.ts",
     "db:studio": "prisma studio",
+    "order:expire": "tsx scripts/expire-orders.ts",
     "escrow:release": "tsx scripts/escrow-release.ts"
   },
   "dependencies": {

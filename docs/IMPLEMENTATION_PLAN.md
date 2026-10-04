@@ -32,7 +32,7 @@ Outputs:
 - Buyer search/filter (keyword, category, price, city) + availability view
 Done when: vendor creates product + service; two concurrent bookings for same slot → exactly one succeeds.
 
-## Phase 3 — Unified cart + Paystack checkout (3–4 days)
+## Phase 3 — Unified cart + Paystack checkout (3–4 days) — BUILT 2026-10-04 (`/cart`, `/api/checkout`, `/api/checkout/quote`, `/api/checkout/verify`, `/api/webhooks/paystack`, `scripts/expire-orders.ts`)
 PRD §3.4, §4.5–4.6, §5, §6 Order/OrderItem/Payment
 Outputs:
 - Cart with `PRODUCT` + `BOOKING` line items; fee preview (subtotal, delivery, service fee, FX quote w/ 30-min lock)
@@ -41,7 +41,7 @@ Outputs:
 - Expire unpaid orders after 30 min
 Done when: test checkout (Paystack test key) marks order PAID; replayed webhook does not double-apply.
 
-## Phase 4 — Escrow, disputes, reviews (2–3 days)
+## Phase 4 — Escrow, disputes, reviews (2–3 days) — BUILT 2026-10-04 (`/orders/[id]`, `/api/orders/[id]/confirm`, `/api/disputes`, `/api/admin/disputes`, `/admin/disputes`, `/api/reviews`, dispute-aware `scripts/escrow-release.ts`)
 PRD §3.6, §4.7–4.10, §4.12, §6 EscrowLedger/Dispute/Review
 Outputs:
 - On Payment PAID → EscrowLedger(HELD, releaseAfter = now + 72h)

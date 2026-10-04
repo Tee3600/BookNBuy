@@ -211,12 +211,12 @@ model Payment {
   fxRate       Float?
   status       PaymentStatus @default(PENDING)
   createdAt    DateTime      @default(now())
-  escrow       EscrowLedger?
+  escrows      EscrowLedger[]
 }
 
 model EscrowLedger {
   id             String       @id @default(cuid())
-  paymentId      String       @unique
+  paymentId      String
   payment        Payment      @relation(fields: [paymentId], references: [id])
   vendorId       String
   vendor         VendorProfile @relation(fields: [vendorId], references: [userId])
@@ -225,6 +225,8 @@ model EscrowLedger {
   status         EscrowStatus @default(HELD)
   releaseAfter   DateTime
   createdAt      DateTime     @default(now())
+
+  @@unique([paymentId, vendorId])
 }
 
 model Fulfillment {

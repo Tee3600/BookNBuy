@@ -16,10 +16,11 @@ export default async function Home() {
       <nav>
         <ul>
           <li><Link href="/catalog">Browse catalog (products + services)</Link></li>
+          <li><Link href="/cart">Cart + checkout (Paystack)</Link></li>
           <li><Link href="/login">Log in</Link> · <Link href="/signup">Sign up</Link></li>
           <li><Link href="/vendor/onboard">Become a vendor (KYC)</Link></li>
           <li><Link href="/vendor/products">Vendor: add product</Link> · <Link href="/vendor/services">Vendor: add service</Link></li>
-          <li><Link href="/admin/vendors">Admin: vendor approvals</Link></li>
+          <li><Link href="/admin/vendors">Admin: vendor approvals</Link> · <Link href="/admin/disputes">Admin: disputes</Link></li>
           <li><Link href="/api/health">API health</Link></li>
         </ul>
       </nav>
