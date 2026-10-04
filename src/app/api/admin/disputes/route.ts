@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { db } from "@/lib/db";
+import { requireAdminKey } from "@/lib/guards";
+import { notify } from "@/lib/notify";
 
 const Body = z.object({
   orderId: z.string(),
@@ -12,6 +14,7 @@ const Body = z.object({
 // Admin resolves: release (vendor paid, order COMPLETED), refund (buyer,
 // escrow REFUNDED, order REFUNDED), partial (split, order COMPLETED).
 export async function POST(req: Request) {
+  if (!requireAdminKey(req)) return NextResponse.json({ error: "Admin key required" }, { status: 401 });
   const parsed = Body.safeParse(await req.json());
   if (!parsed.success) return NextResponse.json({ error: "orderId + action required" }, { status: 400 });
   const { orderId, action, amountNGN, resolution } = parsed.data;
@@ -45,8 +48,13 @@ export async function POST(req: Request) {
         await tx.order.update({ where: { id: orderId }, data: { status: "COMPLETED" } });
       }
       await tx.dispute.update({ where: { orderId }, data: { status: "RESOLVED", resolution: `${action}: ${resolution}` } });
-      return { action };
+      const ord = await tx.order.findUnique({ where: { id: orderId } });
+      return { action, buyerId: ord?.buyerId };
     });
+    if (result.buyerId) {
+      const u = await db.user.findUnique({ where: { id: result.buyerId } }).catch(() => null);
+      if (u?.phone) await notify("dispute.resolved", u.phone, `BookNBuy: dispute on order ${orderId.slice(0, 8)} resolved (${result.action}).`);
+    }
     return NextResponse.json({ orderId, ...result });
   } catch (e) {
     return NextResponse.json({ error: (e as Error).message }, { status: 409 });

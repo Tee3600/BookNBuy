@@ -1,8 +1,10 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
+import { requireAdminKey } from "@/lib/guards";
 
 // Approve (or reject) a vendor: sets VendorProfile.approved + User.kycStatus.
 export async function POST(req: Request) {
+  if (!requireAdminKey(req)) return NextResponse.json({ error: "Admin key required" }, { status: 401 });
   const form = await req.formData().catch(() => null);
   const userId = form?.get("userId")?.toString() ?? (await req.json().catch(() => ({}))).userId;
   const approve = (form?.get("approve")?.toString() ?? "true") !== "false";

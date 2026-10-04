@@ -3,6 +3,8 @@ import { z } from "zod";
 import { db } from "@/lib/db";
 import { priceOrder, fxRateFor } from "@/lib/fees";
 import { applyPaymentByReference, newReference, paystackConfigured, paystackInitialize } from "@/lib/payments";
+import { rateLimit, clientKey } from "@/lib/rate-limit";
+import { notify } from "@/lib/notify";
 
 const Item = z.object({
   kind: z.enum(["PRODUCT", "BOOKING"]),
@@ -19,6 +21,9 @@ const Body = z.object({
 // Phase 3 checkout: authoritative re-price from DB → Order(PENDING) +
 // Payment(PENDING) → Paystack initialize (or demo mode without keys).
 export async function POST(req: Request) {
+  if (!rateLimit(clientKey(req, "checkout"))) {
+    return NextResponse.json({ error: "Too many requests, slow down" }, { status: 429 });
+  }
   const parsed = Body.safeParse(await req.json());
   if (!parsed.success) return NextResponse.json({ error: "Invalid checkout" }, { status: 400 });
   const { buyerEmail, items, currencyPaid } = parsed.data;
@@ -89,6 +94,10 @@ export async function GET(req: Request) {
   try {
     if (!paystackConfigured()) {
       const r = await applyPaymentByReference(reference);
+      if (r.applied && !("duplicate" in r && r.duplicate) && r.orderId) {
+        const o = await db.order.findUnique({ where: { id: r.orderId }, include: { buyer: true } }).catch(() => null);
+        if (o?.buyer.phone) await notify("order.paid", o.buyer.phone, `BookNBuy: payment confirmed for order ${o.id.slice(0, 8)}. Escrow HELD.`);
+      }
       return NextResponse.json({ reference, mode: "demo", ...r });
     }
     const res = await fetch(`https://api.paystack.co/transaction/verify/${reference}`, {
@@ -99,6 +108,10 @@ export async function GET(req: Request) {
       return NextResponse.json({ reference, verified: false, message: data.message ?? "Not paid" }, { status: 402 });
     }
     const r = await applyPaymentByReference(reference);
+    if (r.applied && !("duplicate" in r && r.duplicate) && r.orderId) {
+      const o = await db.order.findUnique({ where: { id: r.orderId }, include: { buyer: true } }).catch(() => null);
+      if (o?.buyer.phone) await notify("order.paid", o.buyer.phone, `BookNBuy: payment confirmed for order ${o.id.slice(0, 8)}. Escrow HELD.`);
+    }
     return NextResponse.json({ reference, verified: true, mode: "live", ...r });
   } catch {
     return NextResponse.json({ error: "Verify unavailable (Postgres unreachable)" }, { status: 503 });

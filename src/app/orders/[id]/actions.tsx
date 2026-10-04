@@ -67,3 +67,36 @@ export function ReviewForm({ orderId }: { orderId: string }) {
     </form>
   );
 }
+
+export function FulfillForm({ orderId }: { orderId: string }) {
+  const [email, setEmail] = useState("");
+  const [method, setMethod] = useState("BIKE");
+  const [trackingRef, setTrackingRef] = useState("");
+  const [receiptPhoto, setReceiptPhoto] = useState("");
+  const [delivered, setDelivered] = useState(false);
+  const [msg, setMsg] = useState("");
+  async function go(e: React.FormEvent) {
+    e.preventDefault();
+    setMsg("Updating…");
+    const res = await fetch("/api/fulfillment", {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ orderId, vendorEmail: email, method, trackingRef, receiptPhoto, markDelivered: delivered }),
+    });
+    const data = await res.json();
+    setMsg(res.ok ? `Fulfillment: ${data.fulfillment}.` : `Error: ${data.error}`);
+  }
+  return (
+    <form onSubmit={go}>
+      <label>Vendor email<input type="email" required value={email} onChange={(e) => setEmail(e.target.value)} /></label>
+      <label>Method
+        <select value={method} onChange={(e) => setMethod(e.target.value)}>
+          <option>COURIER</option><option>BIKE</option><option>WAYBILL</option><option>SELF</option>
+        </select>
+      </label>
+      <label>Tracking / waybill receipt no.<input value={trackingRef} onChange={(e) => setTrackingRef(e.target.value)} placeholder="park + receipt no. for waybill" /></label>
+      <label>Receipt photo URL<input value={receiptPhoto} onChange={(e) => setReceiptPhoto(e.target.value)} placeholder="https://…" /></label>
+      <label><input type="checkbox" checked={delivered} onChange={(e) => setDelivered(e.target.checked)} style={{ width: "auto" }} /> Mark delivered</label>
+      <p><button className="btn btn-primary" type="submit">Update fulfillment</button> {msg && <span>{msg}</span>}</p>
+    </form>
+  );
+}

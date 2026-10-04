@@ -50,7 +50,7 @@ Outputs:
 - Admin resolve → RELEASED / REFUNDED / PARTIAL; Review allowed only after COMPLETED (one per order/booking)
 Done when: paid order → HELD → auto RELEASED after window; disputed order stays HELD until resolved.
 
-## Phase 5 — Fulfillment, notifications, payouts, admin (2–3 days)
+## Phase 5 — Fulfillment, notifications, payouts, admin (2–3 days) — BUILT 2026-10-04 (`/api/fulfillment`, `/vendor/earnings`, `/api/payouts`, `/api/admin/payouts`, `/admin`, `src/lib/notify.ts`)
 PRD §3.5, §3.7–3.8, §4.11, §4.13
 Outputs:
 - Fulfillment update (COURIER|BIKE|WAYBILL|SELF + trackingRef/receipt photo); state machine PENDING→…→COMPLETED|DISPUTED|REFUNDED
@@ -59,7 +59,7 @@ Outputs:
 - Admin queue: orders, disputes, payouts, commission config
 Done when: vendor fulfills via WAYBILL + receipt no.; buyer gets status updates; earnings move pending→available→paid.
 
-## Phase 6 — Hardening + demo (2 days)
+## Phase 6 — Hardening + demo (2 days) — BUILT 2026-10-04 (`src/lib/rate-limit.ts`, `src/lib/guards.ts`, admin-key RBAC, `not-found.tsx`, README demo script)
 PRD §7, §9
 Outputs:
 - Rate-limit auth/OTP, RBAC checks on vendor/admin routes, webhook signature enforced

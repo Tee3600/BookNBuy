@@ -1,6 +1,6 @@
 # Progress — BookNBuy prototype
 
-## Phase reached: Phase 4 (escrow + disputes + reviews), demo-fallback mode
+## Phase reached: Phase 6 (hardening), demo-fallback mode
 Date: 2026-10-04. Commit: see `git log`.
 
 Working locally (`npm run dev` → http://localhost:3000):
@@ -9,8 +9,9 @@ Working locally (`npm run dev` → http://localhost:3000):
 - Phase 4 — escrow + trust: `/orders/[id]` (items, payments, escrow held/released, confirm/dispute/review actions), buyer early confirm (`POST /api/orders/[id]/confirm` → COMPLETED + escrow released), disputes in-window (`POST /api/disputes` → DISPUTED, release frozen), admin queue `/admin/disputes` + `POST /api/admin/disputes` (release/refund/partial), `POST /api/reviews` (COMPLETED only, one per order/booking), `npm run escrow:release` (skips DISPUTED orders, COMPLETES orders with no HELD escrow left)
 
 ## What comes next (roadmap)
-- Phase 5: fulfillment (COURIER/BIKE/WAYBILL/SELF) + Termii/Africa's Talking notifications + payouts + full admin queue
-- Phase 6: hardening (rate limits, RBAC audit), seed demo, mobile pass, metrics
+- Phase 5 — fulfillment + payouts: `POST /api/fulfillment` (COURIER/BIKE/WAYBILL/SELF + receipt ref, WAYBILL requires tracking no., PAID→FULFILLING→IN_TRANSIT→DELIVERED) with FulfillForm on `/orders/[id]`; `src/lib/notify.ts` (log-first, Termii SMS when `TERMI_API_KEY` set) wired into paid/in-transit/delivered/completed/dispute/payout events; `/vendor/earnings?email=` (pending/available/paid-out + `POST /api/payouts` manual-transfer requests); `/admin/payouts` + `POST /api/admin/payouts` (mark PAID with bank ref); `/admin` home with queues + visible commission config
+- Phase 6 — hardening: `src/lib/rate-limit.ts` (20/min token bucket on checkout/bookings/disputes/onboard writes), `src/lib/guards.ts` (approved-vendor checks; admin mutations need `x-admin-key` when `ADMIN_KEY` set), webhook HMAC enforced, `not-found.tsx`, mobile 480px rules in layout, README demo script + PRD §9 metrics
+- Live credentials + Docker Postgres + `npx prisma migrate dev` (applies per-vendor escrow `@@unique`), then full end-to-end: Paystack test checkout → escrow → release → payout (Redis-backed rate limits + editable commission config are post-MVP)
 
 ## To run with real DB (local-first, no Supabase/Vercel)
 1. Install Docker Desktop, then `docker compose up -d db`

@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { db } from "@/lib/db";
+import { rateLimit, clientKey } from "@/lib/rate-limit";
+import { notify } from "@/lib/notify";
 
 const Body = z.object({
   orderId: z.string(),
@@ -13,6 +15,9 @@ const INSPECTION_HOURS = Number(process.env.ESCROW_RELEASE_HOURS ?? 72);
 
 // Buyer opens a dispute within the inspection window → order DISPUTED (funds frozen).
 export async function POST(req: Request) {
+  if (!rateLimit(clientKey(req, "disputes"))) {
+    return NextResponse.json({ error: "Too many requests, slow down" }, { status: 429 });
+  }
   const parsed = Body.safeParse(await req.json());
   if (!parsed.success) return NextResponse.json({ error: "orderId, buyerEmail, reason (5+ chars) required" }, { status: 400 });
   const b = parsed.data;
@@ -36,6 +41,8 @@ export async function POST(req: Request) {
       }),
       db.order.update({ where: { id: order.id }, data: { status: "DISPUTED" } }),
     ]);
+    const fresh = await db.user.findUnique({ where: { id: order.buyerId } }).catch(() => null);
+    if (fresh?.phone) await notify("dispute.opened", fresh.phone, `BookNBuy: dispute opened on order ${order.id.slice(0, 8)}. Funds frozen pending review.`);
     return NextResponse.json({ orderId: order.id, status: "DISPUTED" });
   } catch {
     return NextResponse.json({ error: "Disputes unavailable (Postgres unreachable)" }, { status: 503 });

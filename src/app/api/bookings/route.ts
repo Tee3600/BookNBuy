@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { db } from "@/lib/db";
+import { rateLimit, clientKey } from "@/lib/rate-limit";
 
 const Body = z.object({
   serviceId: z.string(),
@@ -11,6 +12,9 @@ const Body = z.object({
 
 // Phase 2: booking create. DB enforces @@unique([vendorId, startAt]) → 409 on double-book.
 export async function POST(req: Request) {
+  if (!rateLimit(clientKey(req, "bookings"))) {
+    return NextResponse.json({ error: "Too many requests, slow down" }, { status: 429 });
+  }
   const parsed = Body.safeParse(await req.json());
   if (!parsed.success) return NextResponse.json({ error: "Invalid booking fields" }, { status: 400 });
   const b = parsed.data;

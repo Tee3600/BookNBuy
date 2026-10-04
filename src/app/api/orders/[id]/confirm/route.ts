@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { db } from "@/lib/db";
+import { notify } from "@/lib/notify";
 
 const Body = z.object({ buyerEmail: z.string().email() });
 
@@ -24,6 +25,8 @@ export async function POST(req: Request, { params }: { params: { id: string } })
       await tx.order.update({ where: { id: order.id }, data: { status: "COMPLETED" } });
       return held.reduce((s, e) => s + e.amountHeld, 0);
     });
+    const fresh = await db.user.findUnique({ where: { id: order.buyerId } }).catch(() => null);
+    if (fresh?.phone) await notify("order.completed", fresh.phone, `BookNBuy: order ${order.id.slice(0, 8)} completed. Thanks for buying local.`);
     return NextResponse.json({ orderId: order.id, status: "COMPLETED", released });
   } catch {
     return NextResponse.json({ error: "Confirm unavailable (Postgres unreachable)" }, { status: 503 });

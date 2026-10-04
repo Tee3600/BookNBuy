@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { db } from "@/lib/db";
+import { rateLimit, clientKey } from "@/lib/rate-limit";
 
 const Body = z.object({
   email: z.string().email(),
@@ -12,6 +13,9 @@ const Body = z.object({
 
 // Phase 1: single account → vendor KYC (NONE → PENDING). Admin approves.
 export async function POST(req: Request) {
+  if (!rateLimit(clientKey(req, "onboard"))) {
+    return NextResponse.json({ error: "Too many requests, slow down" }, { status: 429 });
+  }
   const parsed = Body.safeParse(await req.json());
   if (!parsed.success) return NextResponse.json({ error: "Invalid KYC fields" }, { status: 400 });
   const b = parsed.data;

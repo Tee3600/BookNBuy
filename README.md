@@ -34,3 +34,14 @@ npm run dev
 
 ## Env
 See `.env.example`. Never commit `.env`.
+
+## Demo script (Phase 6, ~5 min, local)
+1. `docker compose up -d db`, `.env` filled, `npm install`, `npx prisma migrate dev --name init`, `npm run db:seed`, `npm run dev`
+2. Tobi (buyer): sign up `tobi@example.com` → `/catalog?q=gele` → `/book/s…` pick slot → `/cart` preview (NGN + USD quote) → checkout (Paystack test) → `/checkout/callback?reference=…` → order PAID, escrow HELD
+3. Amaka (vendor): `/vendor/earnings?email=amaka@example.com` shows pending → update `/orders/…` fulfillment BIKE → DELIVERED → Tobi confirms → COMPLETED + review
+4. Dispute path: open dispute on a PAID order → `/admin/disputes` resolve (release/refund/partial) → `npm run escrow:release` skips DISPUTED
+5. Payout: Amaka requests payout → `/admin/payouts` mark PAID with bank ref
+6. Health: `/api/health` → `{ok:true}`
+
+## Success metrics (PRD §9, first 3 months)
+50 vendors · 200 completed orders/bookings · <5% disputes · >60% auto-release without dispute · >35% checkout conversion · payout T+2 days.
