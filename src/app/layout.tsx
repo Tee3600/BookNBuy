@@ -10,7 +10,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en">
       <body style={{ fontFamily: "system-ui", margin: 0, background: "#F6F7F4", color: "#14201A" }}>
         <header style={{ padding: 16, background: "#14201A", color: "#fff" }}>
-          <strong>BookNBuy</strong> <span style={{ opacity: 0.7 }}>prototype · Phases 0–2</span>
+          <strong>BookNBuy</strong> <span style={{ opacity: 0.7 }}>prototype · Phases 0–6</span>
         </header>
         <main style={{ padding: 24, maxWidth: 960, margin: "0 auto" }}>{children}</main>
         <style>{`

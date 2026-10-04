@@ -7,7 +7,7 @@ export default async function Home() {
     <div>
       <h1>Buy goods, book services — one account.</h1>
       <p>
-        BookNBuy prototype (Phases 0–2). Local-first: Next.js + local Postgres + Better Auth + Cloudflare R2.
+        BookNBuy prototype (Phases 0–6: catalog, checkout, escrow, fulfillment, payouts, hardening). Local-first: Next.js + local Postgres + Better Auth + Cloudflare R2.
         No Supabase, no Vercel.
       </p>
       <p>
