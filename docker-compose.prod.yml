@@ -1,0 +1,31 @@
+# Production stack: app + local Postgres. No Vercel, no Supabase.
+# Usage: cp .env.example .env  (fill secrets)  →  docker compose -f docker-compose.prod.yml up -d --build
+# Cron (host): escrow release + order expiry —
+#   */30 * * * * docker compose -f /path/docker-compose.prod.yml exec -T app npx tsx scripts/escrow-release.ts
+#   */15 * * * * docker compose -f /path/docker-compose.prod.yml exec -T app npx tsx scripts/expire-orders.ts
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-booknbuy}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-booknbuy}
+      POSTGRES_DB: ${POSTGRES_DB:-booknbuy}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  app:
+    build: .
+    restart: unless-stopped
+    depends_on:
+      - db
+    ports:
+      - "${APP_PORT:-3000}:3000"
+    env_file:
+      - .env
+    environment:
+      DATABASE_URL: "postgresql://${POSTGRES_USER:-booknbuy}:${POSTGRES_PASSWORD:-booknbuy}@db:5432/${POSTGRES_DB:-booknbuy}?schema=public"
+      APP_URL: "${APP_URL:-http://localhost:3000}"
+
+volumes:
+  pgdata:

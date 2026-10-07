@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>BookNBuy — MVP</title>
+<style>
+  body { font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; margin: 0; background: #F6F7F4; color: #14201A; line-height: 1.6; }
+  header { background: #14201A; color: #fff; padding: 24px; }
+  header h1 { margin: 0 0 4px; font-size: 1.6rem; }
+  header p { margin: 0; opacity: .75; }
+  main { max-width: 860px; margin: 0 auto; padding: 24px; }
+  section { background: #fff; border-radius: 12px; padding: 20px 24px; margin: 16px 0; box-shadow: 0 1px 3px rgba(0,0,0,.08); }
+  h2 { margin-top: 0; color: #0E7C3E; font-size: 1.15rem; }
+  table { width: 100%; border-collapse: collapse; font-size: .92rem; }
+  th, td { text-align: left; padding: 8px; border-bottom: 1px solid #E2E8E2; vertical-align: top; }
+  code { background: #EEF2ED; padding: 1px 6px; border-radius: 6px; font-size: .88em; }
+  .meta { font-size: .85rem; color: #555; }
+  @media print { header { -webkit-print-color-adjust: exact; print-color-adjust: exact; } section { box-shadow: none; border: 1px solid #ddd; } }
+</style>
+</head>
+<body>
+<header>
+  <h1>BookNBuy — MVP</h1>
+  <p>Single-file MVP reference · Status: implemented (Phases 0–6), tsc clean</p>
+</header>
+<main>
+  <section>
+    <h2>1. What it is</h2>
+    <p>Unified marketplace: buy goods + book services on one account. NGN-first, diaspora-ready (pay in USD/GBP/EUR, vendors settle in NGN).</p>
+  </section>
+  <section>
+    <h2>2. Stack</h2>
+    <p>Next.js 14 App Router + TypeScript + Tailwind · Prisma + Postgres (local Docker) · Better Auth email+password · Paystack (cards, transfer, USSD, Apple Pay) · R2 photo storage · Termii SMS (log-first without key).</p>
+  </section>
+  <section>
+    <h2>3. Money math (<code>src/lib/fees.ts</code>)</h2>
+    <ul>
+      <li>Commission: 8% products, 10% services, + ₦100 flat per order.</li>
+      <li>FX: NGN settlement; diaspora quote with 2% buffer, locked 30 min (unpaid orders expire via <code>npm run order:expire</code>).</li>
+    </ul>
+  </section>
+  <section>
+    <h2>4. Flows and routes</h2>
+    <table>
+      <tr><th>Flow</th><th>UI</th><th>API</th></tr>
+      <tr><td>Auth + roles BUYER/VENDOR/ADMIN</td><td><code>/signup</code>, <code>/login</code></td><td><code>/api/auth/[...all]</code></td></tr>
+      <tr><td>Vendor KYC → admin approve</td><td><code>/vendor/onboard</code>, <code>/admin/vendors</code></td><td><code>POST /api/vendor/onboard</code>, <code>POST /api/admin/vendors</code></td></tr>
+      <tr><td>Products / Services</td><td><code>/vendor/products</code>, <code>/vendor/services</code>, <code>/catalog</code></td><td><code>POST /api/vendor/products</code>, <code>POST /api/vendor/services</code></td></tr>
+      <tr><td>Slot booking (409 on double-book)</td><td><code>/book/[serviceId]</code></td><td><code>POST /api/bookings</code></td></tr>
+      <tr><td>Cart + fee preview + FX quote</td><td><code>/cart</code> (localStorage)</td><td><code>POST /api/checkout/quote</code></td></tr>
+      <tr><td>Checkout → Order PENDING + Payment PENDING → Paystack init or demo</td><td><code>/cart</code>, <code>/checkout/callback?reference=</code></td><td><code>POST /api/checkout</code>, <code>GET /api/checkout/verify</code></td></tr>
+      <tr><td>Webhook (HMAC-SHA512, replay-safe)</td><td>—</td><td><code>POST /api/webhooks/paystack</code></td></tr>
+      <tr><td>Order view, early confirm, dispute, review</td><td><code>/orders/[id]</code></td><td><code>POST /api/orders/[id]/confirm</code></td></tr>
+      <tr><td>Fulfillment PAID→FULFILLING→IN_TRANSIT→DELIVERED</td><td>FulfillForm on <code>/orders/[id]</code></td><td><code>POST /api/fulfillment</code></td></tr>
+      <tr><td>Disputes (72h window, funds frozen)</td><td><code>/orders/[id]</code>, <code>/admin/disputes</code></td><td><code>POST /api/disputes</code>, <code>POST /api/admin/disputes</code></td></tr>
+      <tr><td>Reviews (COMPLETED only)</td><td><code>/orders/[id]</code></td><td><code>POST /api/reviews</code></td></tr>
+      <tr><td>Payouts (manual-transfer requests)</td><td><code>/vendor/earnings</code>, <code>/admin/payouts</code>, <code>/admin</code></td><td><code>POST /api/payouts</code>, <code>POST /api/admin/payouts</code></td></tr>
+      <tr><td>Health</td><td colspan="2"><code>/api/health</code> → {ok, db}</td></tr>
+    </table>
+  </section>
+  <section>
+    <h2>5. State machines</h2>
+    <ul>
+      <li>Order: <code>PENDING &gt; PAID &gt; FULFILLING &gt; IN_TRANSIT &gt; DELIVERED &gt; COMPLETED | DISPUTED | REFUNDED | CANCELLED</code></li>
+      <li>Booking: <code>PENDING_PAYMENT &gt; CONFIRMED &gt; COMPLETED | CANCELLED | NO_SHOW</code></li>
+      <li>Escrow: <code>HELD &gt; RELEASED | REFUNDED | PARTIAL</code>; auto-release after 72h via <code>npm run escrow:release</code> (skips DISPUTED).</li>
+    </ul>
+  </section>
+  <section>
+    <h2>6. Run (local-first)</h2>
+    <ol>
+      <li><code>docker compose up -d db</code></li>
+      <li>Copy <code>.env.example</code> → <code>.env</code>; set <code>BETTER_AUTH_SECRET</code> (32+ chars), R2 keys, Paystack keys for live checkout.</li>
+      <li><code>npm install</code> · <code>npx prisma migrate dev --name init</code> · <code>npm run db:seed</code> · <code>npm run dev</code></li>
+      <li>Without DB the app renders demo-fallback data; money writes return 503.</li>
+    </ol>
+  </section>
+  <section>
+    <h2>7. Hardening (in MVP)</h2>
+    <p>Rate limits (20/min on checkout/bookings/disputes/onboard), approved-vendor guards + <code>x-admin-key</code> when set, webhook HMAC enforced, mobile 480px rules.</p>
+  </section>
+  <section>
+    <h2>8. Out of scope (post-MVP)</h2>
+    <p>Native apps, live GPS, automated Paystack Transfers, multi-currency settlement, in-app chat, promos, courier APIs, recommendations, Redis rate limits, editable commission config.</p>
+  </section>
+  <p class="meta">Source: docs/MVP.md · README.md · PROGRESS.md · docs/gemini-code-1789943796558.md</p>
+</main>
+</body>
+</html>
