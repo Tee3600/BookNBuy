@@ -10,7 +10,7 @@ FROM node:20-alpine AS builder
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
-ENV NEXT_TELEMETRY_DISABLED=1
+ENV NEXT_TELEMETRY_DISABLED=1 DOCKER_BUILD=1
 # Prisma client for the postgres schema (no live DB needed to generate)
 RUN npx prisma generate
 RUN npm run build

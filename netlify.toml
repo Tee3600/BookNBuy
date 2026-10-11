@@ -1,0 +1,17 @@
+# Netlify: auto-detects Next.js (no plugin needed). Connect repo in Netlify UI,
+# then set the env vars below in Site settings → Environment variables.
+[build]
+  command = "npx prisma generate && npm run build"
+  publish = ".next"
+
+[build.environment]
+  NODE_VERSION = "20"
+  NEXT_TELEMETRY_DISABLED = "1"
+
+# Required env vars in Netlify UI (see .env.example for values):
+#   DATABASE_URL  — reachable Postgres (local embedded PG does NOT travel;
+#                   use a hosted DB, e.g. Neon free tier, or your VPS)
+#   APP_URL, NEXT_PUBLIC_APP_URL — your https://<site>.netlify.app
+#   BETTER_AUTH_SECRET — random 32+ chars
+# Optional: PAYSTACK_* (else demo checkout), R2_* (else image-URL field),
+#   TERMI_* (else log-only notify), ADMIN_KEY (locks admin mutations)
