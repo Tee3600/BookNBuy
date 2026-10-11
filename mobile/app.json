@@ -1,0 +1,15 @@
+{
+  "expo": {
+    "name": "BookNBuy",
+    "slug": "booknbuy",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "splash": { "image": "./assets/splash.png", "backgroundColor": "#0A2E1F" },
+    "android": {
+      "package": "app.booknbuy.twa",
+      "adaptiveIcon": { "foregroundImage": "./assets/icon.png", "backgroundColor": "#0A2E1F" }
+    },
+    "plugins": []
+  }
+}
