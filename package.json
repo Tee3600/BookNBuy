@@ -8,24 +8,26 @@
     "start": "next start",
     "lint": "next lint",
     "db:migrate": "prisma migrate dev",
+    "db:up": "node scripts/pg-local.mjs",
     "db:seed": "tsx prisma/seed.ts",
     "db:studio": "prisma studio",
     "order:expire": "tsx scripts/expire-orders.ts",
     "escrow:release": "tsx scripts/escrow-release.ts"
   },
   "dependencies": {
-    "next": "14.2.5",
-    "react": "18.3.1",
-    "react-dom": "18.3.1",
     "@aws-sdk/client-s3": "^3.600.0",
     "@aws-sdk/s3-request-presigner": "^3.600.0",
     "@prisma/client": "5.18.0",
     "better-auth": "^1.0.0",
+    "next": "14.2.5",
+    "react": "18.3.1",
+    "react-dom": "18.3.1",
     "zod": "3.23.8"
   },
   "devDependencies": {
     "@types/node": "20.16.0",
     "@types/react": "18.3.3",
+    "embedded-postgres": "^16.14.0-beta.17",
     "prisma": "5.18.0",
     "tsx": "4.16.2",
     "typescript": "5.5.4"

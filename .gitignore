@@ -9,6 +9,9 @@ dist/
 prisma/*.db
 prisma/*.db-journal
 
+# Embedded Postgres data (local dev only)
+pgdata/
+
 # Env
 .env
 .env.local
