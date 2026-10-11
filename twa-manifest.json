@@ -1,0 +1,18 @@
+{
+  "packageId": "app.booknbuy.twa",
+  "host": "booknbuy360.netlify.app",
+  "name": "BookNBuy",
+  "launcherName": "BookNBuy",
+  "display": "standalone",
+  "themeColor": "#0A2E1F",
+  "navigationColor": "#0A2E1F",
+  "backgroundColor": "#0A2E1F",
+  "startUrl": "/",
+  "iconUrl": "https://booknbuy360.netlify.app/icons/icon-512.png",
+  "maskableIconUrl": "https://booknbuy360.netlify.app/icons/maskable-512.png",
+  "splashScreenFadeOutDuration": 300,
+  "signingKey": { "path": "./android.keystore", "alias": "android" },
+  "appVersion": "1.0.0",
+  "appVersionCode": 1,
+  "shortcuts": []
+}
