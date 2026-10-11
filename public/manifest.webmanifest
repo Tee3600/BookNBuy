@@ -1,0 +1,17 @@
+{
+  "name": "BookNBuy — Buy goods, book services",
+  "short_name": "BookNBuy",
+  "description": "NGN-first marketplace: shop products and book trusted pros with escrow-protected payments.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0A2E1F",
+  "theme_color": "#0A2E1F",
+  "categories": ["shopping", "business"],
+  "icons": [
+    { "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/icons/maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

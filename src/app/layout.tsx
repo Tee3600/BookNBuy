@@ -3,7 +3,17 @@ import Link from "next/link";
 
 export const metadata: Metadata = {
   title: "BookNBuy — Buy goods, book services",
-  description: "NGN-first unified marketplace prototype (Phases 0-6)"
+  description: "NGN-first unified marketplace prototype (Phases 0-6)",
+  manifest: "/manifest.webmanifest",
+  themeColor: "#0A2E1F",
+  appleWebApp: { capable: true, statusBarStyle: "black-translucent", title: "BookNBuy" },
+  icons: {
+    icon: [
+      { url: "/icons/icon-192.png", sizes: "192x192", type: "image/png" },
+      { url: "/icons/icon-512.png", sizes: "512x512", type: "image/png" },
+    ],
+    apple: [{ url: "/icons/apple-touch-180.png", sizes: "180x180", type: "image/png" }],
+  },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
@@ -19,6 +29,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           </nav>
         </header>
         <main style={{ padding: 24, maxWidth: 1080, margin: "0 auto" }}>{children}</main>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `if('serviceWorker' in navigator){window.addEventListener('load',function(){navigator.serviceWorker.register('/sw.js').catch(function(){})})}`,
+          }}
+        />
         <style>{`
           label { display: block; font-weight: 600; margin: 12px 0 6px; }
           input { width: 100%; padding: 12px 14px; font-size: 1rem; border: 2px solid #E2E8E2; border-radius: 12px; }
