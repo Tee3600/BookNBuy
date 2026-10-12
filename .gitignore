@@ -17,6 +17,9 @@ pgdata/
 *.jks
 mobile/credentials.json
 
+# Built APK (upload to QubDrive, never commit)
+*.apk
+
 # Env
 .env
 .env.local
