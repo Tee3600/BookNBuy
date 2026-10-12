@@ -2,14 +2,28 @@
   "expo": {
     "name": "BookNBuy",
     "slug": "booknbuy",
+    "owner": "tee3600",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
-    "splash": { "image": "./assets/splash.png", "backgroundColor": "#0A2E1F" },
+    "splash": {
+      "image": "./assets/splash.png",
+      "backgroundColor": "#0A2E1F"
+    },
     "android": {
       "package": "app.booknbuy.twa",
-      "adaptiveIcon": { "foregroundImage": "./assets/icon.png", "backgroundColor": "#0A2E1F" }
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/icon.png",
+        "backgroundColor": "#0A2E1F"
+      }
     },
-    "plugins": []
+    "plugins": [
+      "expo-asset"
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "4e39088a-2980-4adb-beef-0d1fb07da9af"
+      }
+    }
   }
 }

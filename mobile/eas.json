@@ -8,5 +8,5 @@
       "android": { "buildType": "app-bundle" }
     }
   },
-  "cli": { "version": ">= 16.0.0" }
+  "cli": { "version": ">= 16.0.0", "appVersionSource": "remote" }
 }

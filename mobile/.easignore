@@ -1,0 +1,4 @@
+# EAS upload rules (replaces .gitignore for cloud uploads).
+# Intentionally includes mobile/credentials.json + mobile/android.keystore
+# so remote builds can sign; node_modules is always excluded by EAS CLI.
+# Keep secrets OUT of this folder (no .env lives here).

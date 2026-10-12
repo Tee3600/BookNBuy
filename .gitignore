@@ -12,6 +12,11 @@ prisma/*.db-journal
 # Embedded Postgres data (local dev only)
 pgdata/
 
+# Android signing (never commit)
+*.keystore
+*.jks
+mobile/credentials.json
+
 # Env
 .env
 .env.local
